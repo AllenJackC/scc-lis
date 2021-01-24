@@ -1,6 +1,10 @@
-@import url('https://fonts.googleapis.com/css?family=Oswald|Roboto+Condensed:400,400i,700&display=swap?family=Droid+Sans');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap');
 :root {
-
+	--green: #00693C;
+	--yellow: #FFC627;
+	--white: #FFFDF7;
+	--black: #212624;
+	--grey: #E6E2D8;
 }
 /* http://meyerweb.com/eric/tools/css/reset/ 
    v2.0 | 20110126
@@ -27,4 +31,236 @@ blockquote, q {
 blockquote:before, blockquote:after, q:before, q:after {
 	content: '';
 	content: none;
+}
+body {
+	color: var(--white);
+	background-color: var(--black);
+	line-height: 1.5em;
+	overflow-x: hidden;
+	pointer-events: none;
+	text-align: left;
+	font-family: 'Noto Sans JP', sans-serif;
+	-webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+input[type="number"], input[type="text"] {
+	pointer-events: auto;
+    background: var(--white);
+    color: var(--black);
+    border: solid 1px var(--grey);
+	padding: 4px;
+	-moz-appearance: textfield;
+	height: 18px;
+	font-size: 13px;
+	font-family: 'Noto Sans JP', sans-serif;
+}
+select, .chosen-container {
+	pointer-events: auto;
+}
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input:focus, select:focus {
+	outline: var(--yellow) auto 5px;
+}
+label {
+	font-weight: 700;
+	line-height: 25px;
+}
+h1 {
+	font-weight: 700;
+    font-size: 21px;
+    border-bottom: 2px solid var(--white);
+    margin-bottom: 10px;
+    padding-bottom: 5px;
+}
+h2 {
+	font-weight: 700;
+    font-size: 18px;
+}
+#main {
+	height: 100%;
+	margin: 0 auto;
+	max-width: 996px;
+	padding: 120px 30px 0 30px;
+	display: grid;
+    grid-gap: 20px;
+	grid-template-columns: 1fr;
+}
+#header {
+	position: fixed;
+	height: 100px;
+	width: 100%;
+	background-color: var(--green);
+	border-bottom: solid 5px var(--yellow);
+	overflow: hidden;
+}
+#header img {
+	height: 115px;
+}
+.window {
+    padding: 20px;
+    background-color: var(--green);
+    border: solid 2px var(--yellow);
+}
+
+#login {
+	display: flex;
+	grid-column-end: span 3;
+}
+#accession {
+	flex-grow: 1;
+	margin: 0 15px;
+}
+#tests {
+	display: grid;
+    grid-gap: 5px;
+	text-align: center;
+}
+#patient {
+	grid-column-end: span 3;
+}
+#patient .row {
+	display: flex;
+	align-items: center;
+}
+#patient .row:nth-last-child(n+2) > div:nth-child(1) {
+	margin-right: 7.5px;
+	text-align: left;
+	width: calc(50% - 7.5px);
+}
+#patient .row:nth-last-child(n+2) > div:nth-child(2) {
+	margin-left: 7.5px;
+	text-align: right;
+	width: calc(50% - 7.5px);
+}
+#patient .row:last-child {
+	display: flex;
+	align-items: flex-start;
+	margin-top: 20px;
+}
+.test {
+	position: relative;
+    margin-top: 25px;
+	display: flex;
+	flex-wrap: wrap;
+	width: calc(100% + 5px);
+	padding: 15px;
+}
+.tab {
+	position: absolute;
+    top: -32px;
+    left: 10px;
+    background: var(--yellow);
+    color: var(--black);
+    padding: 2px 4px;
+    border: 2px solid var(--yellow);
+    font-weight: 700;
+    border-radius: 10px 10px 0 0;
+}
+.test .column {
+	display: grid;
+    grid-gap: 10px;
+	align-items: center;
+	padding: 10px;
+	height: fit-content;
+}
+.urinalysis .column:nth-child(3) {
+    grid-template-columns: calc(70% - 5px) calc(30% - 5px);
+    min-width: 370px;
+}
+.urinalysis .column:nth-child(4) {
+    grid-template-columns: calc(50% - 5px) calc(50% - 5px);
+    min-width: 260px;
+}
+.test h1 {
+	flex-basis: 100%;
+	padding: 5px;
+}
+.test h2 {
+	grid-column-end: span 2;
+}
+.test label {
+	text-align: right;
+}
+.label {
+	font-weight: 700;
+	line-height: 1.5em;
+	margin-right: 15px;
+}
+.button {
+	pointer-events: auto;
+    padding: 4px 6px;
+    height: 18px;
+    line-height: 1em;
+    text-transform: uppercase;
+    font-weight: 700;
+    background-color: var(--grey);
+    color: var(--black);
+    border: solid 1px var(--black);
+	cursor: pointer;
+}
+.button:hover, .button:focus {
+	outline: solid 1px var(--yellow);
+	border-color: var(--yellow);
+}
+.button:active, .button:visited {
+	outline: solid 1px var(--black);
+	border-color: var(--black);
+	background-color: var(--yellow);
+	color: var(--black);
+}
+.unit-container {
+	position: relative;
+}
+.unit-container input {
+	width: calc(100% - 10px);
+}
+.unit-suffix {
+	position: absolute;
+	left: 7px;
+	top: 3px;
+	color: var(--black);
+	font-size: 13px;
+	padding-left: 8px;
+}
+.hidden {
+	display: none;
+}
+
+/* Chosen.js CSS */
+.chosen-container-single a.chosen-single, .chosen-container-active.chosen-with-drop a.chosen-single {
+	border-radius: 0;
+    color: var(--black);
+    border-color: var(--grey);
+    background-color: var(--white);
+	font-family: 'Noto Sans JP', sans-serif;
+	background-image: none;
+	height: 28px;
+	line-height: 26px;
+}
+.chosen-container div.chosen-drop {
+	color: var(--black);
+    border-color: var(--grey);
+    background-color: var(--white);
+	font-family: 'Noto Sans JP', sans-serif;
+}
+.chosen-container ul.chosen-results li.highlighted {
+	background-color: var(--yellow);
+	color: var(--black);
+	background-image: none;
+}
+.chosen-container-active a.chosen-single {
+	border-color: var(--yellow);
+	outline: solid 1px var(--yellow);
+	box-shadow: none;
+}
+.chosen-container-single a.chosen-single span {
+	line-height: 26px;
 }
