@@ -407,11 +407,14 @@ $(function() {
 										'<label for="sg-' + accessionNumber + '">Specific Gravity</label>' +
 										'<select id="sg-' + accessionNumber + '">' +
 											'<option></option>' +
-											'<option>0.5 mmol/L</option>' +
-											'<option>1.5 mmol/L</option>' +
-											'<option>4 mmol/L</option>' +
-											'<option>8 mmol/L</option>' +
-											'<option>16 mmol/L</option>' +
+											'<option>1.000</option>' +
+											'<option>1.005</option>' +
+											'<option>1.010</option>' +
+											'<option>1.015</option>' +
+											'<option>1.020</option>' +
+											'<option>1.025</option>' +
+											'<option>1.030</option>' +
+											'<option>>1.030</option>' +
 										'</select>' +
 										'<label for="blood-' + accessionNumber + '">Blood</label>' +
 										'<select id="blood-' + accessionNumber + '">' +
