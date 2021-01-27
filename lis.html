@@ -7,6 +7,11 @@
 	<script src="libs/jquery-3.3.1.min.js" type="text/javascript"></script>
 </head>
 <body>
+	<div id="loading-overlay" class="hidden">
+		Loading...
+		<img src="images/loading.gif" />
+		Please Wait
+	</div>
 	<div id="header">
 		<img src="images/logo.png">
 	</div>
@@ -16,155 +21,21 @@
 			<input id="accession" type="number" tabindex="1" />
 			<div id="retrieve" class="button" tabindex="2">Retrieve</div>
 		</div>
-		<div id="patient" class="window">
+		<div id="patient" class="window hidden">
 			<div class="row">
-				<div id="patient-id">Test Information</div>
-				<div id="patient-location">Test Information</div>
+				<div id="patient-id"></div>
+				<div id="patient-location"></div>
 			</div>
 			<div class="row">
-				<div id="patient-name">Test Information</div>
-				<div id="patient-dob">Test Information</div>
+				<div id="patient-name"></div>
+				<div id="patient-dob"></div>
+			</div>
+			<div class="row">
+				<div id="patient-sex"></div>
 			</div>
 			<div class="row">
 				<div class="label">Tests Ordered:</div>
-				<div id="tests">
-					<div id="accessionnum" class="button" tabindex="3">Urinalysis</div>
-					<div id="accessionnum" class="button" tabindex="4">Test Information</div>
-					<div id="accessionnum" class="button" tabindex="5">Test Information</div>
-				</div>
-			</div>
-		</div>
-		<div data-id="accessionnum" class="window urinalysis test">
-			<div class="tab">123123123123123</div>
-			<h1>Urinalysis</h1>
-			<div class="column">
-				<label for="appearance-accessionnum">Appearance</label>
-				<select id="appearance-accessionnum">
-					<option></option>
-					<option>Clear</option>
-					<option>Cloudy</option>
-					<option>Turbid</option>
-				</select>
-				<label for="colour-accessionnum">Colour</label>
-				<select id="colour-accessionnum">
-					<option></option>
-					<option>Yellow</option>
-					<option>Amber</option>
-					<option>Other</option>
-				</select>
-				<label class="hidden" for="other-colour-accessionnum">Other Colour</label>
-				<input class="hidden" id="other-colour-accessionnum" type="text" />
-				<label for="sg-refract-accessionnum">Specific Gravity (Refractometer)</label>
-				<select id="sg-refract-accessionnum">
-					<option></option>
-					<option>1.000</option>
-					<option>1.005</option>
-					<option>1.010</option>
-					<option>1.015</option>
-					<option>1.020</option>
-					<option>1.025</option>
-					<option>1.030</option>
-					<option>>1.030</option>
-				</select>
-				<label for="volume-accessionnum">Total Volume</label>
-				<div class="unit-container">
-					<input id="volume-accessionnum" type="number" min="0" value="0" />
-					<span class="unit-suffix">ml</span>
-				</div>
-			</div>
-			<div class="column">
-				<h2>Chemical Analysis</h2>
-				<label for="glucose-accessionnum">Glucose</label>
-				<select id="glucose-accessionnum">
-					<option></option>
-					<option>Negative</option>
-					<option>6 mmol/L</option>
-					<option>14 mmol/L</option>
-					<option>28 mmol/L</option>
-					<option>56 mmol/L</option>
-					<option>111 mmol/L</option>
-					<option>>111 mmol/L</option>
-				</select>
-				<label for="bilirubin-accessionnum">Bilirubin</label>
-				<select id="bilirubin-accessionnum">
-					<option></option>
-					<option>Negative</option>
-					<option>Small 1+</option>
-					<option>Moderate 2+</option>
-					<option>Large 3+</option>
-				</select>
-				<label for="ketones-accessionnum">Ketones</label>
-				<select id="ketones-accessionnum">
-					<option></option>
-					<option>0.5 mmol/L</option>
-					<option>1.5 mmol/L</option>
-					<option>4 mmol/L</option>
-					<option>8 mmol/L</option>
-					<option>16 mmol/L</option>
-				</select>
-				<label for="sg-accessionnum">Specific Gravity</label>
-				<select id="sg-accessionnum">
-					<option></option>
-					<option>0.5 mmol/L</option>
-					<option>1.5 mmol/L</option>
-					<option>4 mmol/L</option>
-					<option>8 mmol/L</option>
-					<option>16 mmol/L</option>
-				</select>
-				<label for="blood-accessionnum">Blood</label>
-				<select id="blood-accessionnum">
-					<option></option>
-					<option>Negative</option>
-					<option>Trace</option>
-					<option>Small +</option>
-					<option>Moderate ++</option>
-					<option>Large +++</option>
-				</select>
-				<label for="ph-accessionnum">pH</label>
-				<select id="ph-accessionnum">
-					<option></option>
-					<option>5.0</option>
-					<option>6.0</option>
-					<option>6.5</option>
-					<option>7.0</option>
-					<option>7.5</option>
-					<option>8.0</option>
-					<option>8.5</option>
-				</select>
-				<label for="protein-accessionnum">Protein</label>
-				<select id="protein-accessionnum">
-					<option></option>
-					<option>Negative</option>
-					<option>Trace</option>
-					<option>0.3 g/L</option>
-					<option>1 g/L</option>
-					<option>3 g/L</option>
-					<option>>20 g/L</option>
-				</select>
-				<label for="urobilinogen-accessionnum">Urobilinogen</label>
-				<select id="urobilinogen-accessionnum">
-					<option></option>
-					<option>3 mmol/L</option>
-					<option>17 mmol/L</option>
-					<option>34 mmol/L</option>
-					<option>68 mmol/L</option>
-					<option>135 mmol/L</option>
-				</select>
-				<label for="nitrite-accessionnum">Nitrite</label>
-				<select id="nitrite-accessionnum">
-					<option></option>
-					<option>Negative</option>
-					<option>Positive</option>
-				</select>
-				<label for="leukocytes-accessionnum">Leukocytes</label>
-				<select id="leukocytes-accessionnum">
-					<option></option>
-					<option>Negative</option>
-					<option>Trace</option>
-					<option>Small +</option>
-					<option>Moderate ++</option>
-					<option>Large +++</option>
-				</select>
+				<div id="tests"></div>
 			</div>
 		</div>
 	</div>
