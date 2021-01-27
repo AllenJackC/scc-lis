@@ -646,6 +646,7 @@ $(function() {
 										'<label for="other-microscopic-' + accessionNumber + '">Other</label>' +
 										'<textarea id="other-microscopic-' + accessionNumber + '"></textarea>' +
 									'</div>' +
+									'<div class="button" style="width: fit-content">Release</div>' +
 								'</div>';
 						break;
 					}
