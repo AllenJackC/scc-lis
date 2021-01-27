@@ -517,31 +517,31 @@ $(function() {
 										'<select id="epithelial-cells-' + accessionNumber + '">' +
 											'<option></option>' +
 											'<option>Negative</option>' +
-											'<option>0-2 squamous</option>' +
-											'<option>2-5 squamous</option>' +
-											'<option>5-10 squamous</option>' +
-											'<option>10-25 squamous</option>' +
-											'<option>>25 squamous</option>' +
+											'<option>0-2</option>' +
+											'<option>2-5</option>' +
+											'<option>5-10</option>' +
+											'<option>10-25</option>' +
+											'<option>>25</option>' +
 										'</select>' +
 										'<label for="transitional-cells-' + accessionNumber + '">Transitional Cells</label>' +
 										'<select id="transitional-cells-' + accessionNumber + '">' +
 											'<option></option>' +
 											'<option>Negative</option>' +
-											'<option>0-2 squamous</option>' +
-											'<option>2-5 squamous</option>' +
-											'<option>5-10 squamous</option>' +
-											'<option>10-25 squamous</option>' +
-											'<option>>25 squamous</option>' +
+											'<option>0-2</option>' +
+											'<option>2-5</option>' +
+											'<option>5-10</option>' +
+											'<option>10-25</option>' +
+											'<option>>25</option>' +
 										'</select>' +
 										'<label for="renal-tubule-cells-' + accessionNumber + '">Renal Tubule Cells</label>' +
 										'<select id="renal-tubule-cells-' + accessionNumber + '">' +
 											'<option></option>' +
 											'<option>Negative</option>' +
-											'<option>0-2 squamous</option>' +
-											'<option>2-5 squamous</option>' +
-											'<option>5-10 squamous</option>' +
-											'<option>10-25 squamous</option>' +
-											'<option>>25 squamous</option>' +
+											'<option>0-2</option>' +
+											'<option>2-5</option>' +
+											'<option>5-10</option>' +
+											'<option>10-25</option>' +
+											'<option>>25</option>' +
 										'</select>' +
 										'<label for="granular-casts-' + accessionNumber + '">Granular Casts</label>' +
 										'<select id="granular-casts-' + accessionNumber + '">' +
