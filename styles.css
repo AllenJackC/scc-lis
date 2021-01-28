@@ -74,6 +74,11 @@ textarea {
 	min-height: 100px;
 	min-width: 250px;
 }
+select:disabled, input:disabled, textarea:disabled, .button.disabled, .chosen-disabled {
+	opacity: .75!important;
+    cursor: default;
+	pointer-events: none;
+}
 label {
 	font-weight: 700;
 	line-height: 25px;
@@ -201,6 +206,11 @@ strong {
 	padding: 10px;
 	height: fit-content;
 }
+.test .column.release {
+	display: flex;
+    justify-content: flex-end;
+    padding-top: 0;
+}
 .urinalysis .column.general {
     grid-template-columns: 2.55fr 3.10fr;
 }
@@ -212,7 +222,7 @@ strong {
     margin: 20px 5px;
 }
 .urinalysis .column.microscopic {
-    grid-template-columns: 1.85fr 2.6fr;
+    grid-template-columns: 2.55fr 2.6fr;
     border: 1px solid var(--white);
     position: relative;
     padding-top: 15px;

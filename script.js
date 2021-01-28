@@ -1,11 +1,29 @@
 function getTextWidth(text, font) {
-    // re-use canvas object for better performance
-    var canvas = getTextWidth.canvas || (getTextWidth.canvas = document.createElement("canvas"));
-    var context = canvas.getContext("2d");
-    context.font = font;
-    var metrics = context.measureText(text);
-    return metrics.width;
+	// re-use canvas object for better performance
+	var canvas = getTextWidth.canvas || (getTextWidth.canvas = document.createElement("canvas"));
+	var context = canvas.getContext("2d");
+	context.font = font;
+	var metrics = context.measureText(text);
+	return metrics.width;
 }
+//Set current date/time
+function curDate() {
+    var
+      date = new Date(),
+      ten = function (i) {
+        return (i < 10 ? '0' : '') + i;
+      },
+      YYYY = date.getFullYear(),
+      MM = ten(date.getMonth() + 1),
+      DD = ten(date.getDate()),
+      HH = ten(date.getHours()),
+      II = ten(date.getMinutes()),
+      SS = ten(date.getSeconds())
+    ;
+    return YYYY + '-' + MM + '-' + DD + 'T' +
+             HH + ':' + II + ':' + SS;
+}
+
 //Setup chosen.js for select fields
 function chosenSelects() {
 	$('select').chosen({
@@ -15,25 +33,26 @@ function chosenSelects() {
 	});
 }
 //Move units based on value and suffix
-function moveUnits(val,suffix) {
-	var textWidth = getTextWidth(val, "13px 'Noto Sans JP'" );
+function moveUnits(val, suffix) {
+	var textWidth = getTextWidth(val, "13px 'Noto Sans JP'");
 	suffix.css('left', textWidth + 'px');
 }
 //Show "Other Colour" field based on value
 function showOtherColour(accessionNumber) {
 	var otherColour = $('#other-colour-' + accessionNumber);
 	var otherColourLabel = $('[for="other-colour-' + accessionNumber + '"]');
-	if ( $("[id^='colour']").val() === "Other" ) {
+	if ($("[id^='colour']").val() === "Other") {
 		otherColour.slideToggle(300);
 		otherColourLabel.slideToggle(300);
-	} else if ( otherColour.is(':visible') ) {
+	}
+	else if (otherColour.is(':visible')) {
 		otherColour.slideToggle(300);
 		otherColourLabel.slideToggle(300);
 		otherColour.val('');
 	}
 }
 //Autosave field data
-function saveData(base,recordID,accessionNumber) {
+function saveData(base, recordID, accessionNumber) {
 	base('Tests').update([
 		{
 			"id": recordID,
@@ -79,10 +98,47 @@ function saveData(base,recordID,accessionNumber) {
 				"Other": $('#other-microscopic-' + accessionNumber).val()
 			}
 		}
-	], function (err) {	if (err) { console.error(err); return; }
+	], function(err) {
+		if (err) {
+			console.error(err);
+			return;
+		}
 	});
 }
-
+//Lock certain portions of the accession
+//record depending on Release
+function releaseData(base,accessionNumber,releaseSections,releaseType) {
+	$('select, input, textarea', releaseSections).prop('disabled', true);
+	$('select', releaseSections).trigger('chosen:updated');
+	$('.button', releaseSections).addClass('disabled');
+	base('Tests').select({
+		view: 'Grid view',
+		filterByFormula: "{Accession Number} = '" + accessionNumber + "'"
+	}).eachPage(function page(records, fetchNextPage) {
+		records.forEach(function(record) {
+			testID = record.id;
+		});
+		fetchNextPage();
+	}, function done(err) {
+		if (err) {
+			console.error(err);
+			return;
+		}
+		base('Tests').update([
+		{
+			"id": testID,
+			"fields": {
+				"Released": releaseType
+			}
+		}
+		], function(err) {
+			if (err) {
+				console.error(err);
+				return;
+			}
+		});
+	});
+}
 $(function() {
 	var patientWindow = $('#patient');
 	var loadOverlay = $('#loading-overlay');
@@ -90,7 +146,6 @@ $(function() {
 	var retrieveButton = $('#retrieve');
 	var accessionNumber;
 	var saveInterval;
-	
 	//Setup Airtable for patient information
 	var Airtable = require('airtable');
 	Airtable.configure({
@@ -98,32 +153,37 @@ $(function() {
 		apiKey: 'keymlfH0gK5O3u0wp'
 	});
 	var base = Airtable.base('app9VJDA4BqMl4REP');
-	
 	//Setup chosen.js for select fields
 	chosenSelects();
-	
 	//Since everything is tabbed, accept
 	//enter/return key for buttons
-	$('#main').on('keypress', '.button', function (e) {
+	$('#main').on('keypress', '.button', function(e) {
 		if (e.which == 13) {
 			$(this).click();
 		}
 	});
+	//Allow enter/return key to retrieve
+	//accession number
+	$('#accession').keypress(function(e) {
+		if (e.which == 13) {
+			retrieveButton.click();
+		}
+	});
 	//Check to see if amounts are entered.
 	//If so, move the units
-	$('#main').on('input paste blur', "[id^='volume']", function() {
-		var thisSuffix = $("[id^='volume']").closest('.unit-container').children('.unit-suffix');
-		var thisVal = $("[id^='volume']").val();
-		moveUnits(thisVal,thisSuffix)
+	$('#main').on('input paste blur', "[id^='volume'],[id^='sed-volume']", function() {
+		var thisSuffix = $(this).closest('.unit-container').children('.unit-suffix');
+		var thisVal = $(this).val();
+		moveUnits(thisVal, thisSuffix)
 	});
-	$('#main').on('blur', "[id^='volume']", function() {
-		var thisSuffix = $("[id^='volume']").closest('.unit-container').children('.unit-suffix');
-		var thisVal = $("[id^='volume']").val();
-		if ( !thisVal ) {
+	$('#main').on('blur', "[id^='volume'],[id^='sed-volume']", function() {
+		var thisSuffix = $(this).closest('.unit-container').children('.unit-suffix');
+		var thisVal = $(this).val();
+		if (!thisVal) {
 			$(this).val(0);
 			thisVal = 0;
 		}
-		moveUnits(thisVal,thisSuffix);
+		moveUnits(thisVal, thisSuffix);
 	});
 	//If "Other Colour" is selected,
 	//show field, otherwise hide
@@ -135,10 +195,34 @@ $(function() {
 	$('#main').on('click', '.option.button', function() {
 		if ($(this).hasClass('active')) {
 			$(this).removeClass('active');
-		} else {
+		}
+		else {
 			var otherOption = $(this).closest('.option-buttons').children('.active');
 			if (otherOption) otherOption.removeClass('active');
 			$(this).addClass('active');
+		}
+	});
+	//When Release button is clicked,
+	//disable sections and close record
+	//as appropriate
+	$('#main').on('click', '.release .button', function() {
+		var confirmRelease = confirm("Are you sure you want to release this information?\n\nPress OK to proceed, or Cancel to return.\n\nNOTE: This action cannot be undone!");
+		var thisAccession = $(this).closest('.window');
+		var partialRelease = $('.column.general, .column.chemical', thisAccession);
+		var fullRelease = $('.column', thisAccession);
+		loadOverlay.css('display', 'flex');
+		if (confirmRelease) {
+			if ($(this).attr('id').startsWith('release')) {
+				releaseData(base,accessionNumber,partialRelease,"Partial")
+				$(this).addClass('disabled');
+				loadOverlay.removeAttr('style');
+			} else if ($(this).attr('id').startsWith('full-release')) {
+				releaseData(base,accessionNumber,fullRelease,"Full")
+				clearInterval(saveInterval);
+				thisAccession.remove();
+				alert('Accession #' + accessionNumber + ' successfully released!');
+				loadOverlay.removeAttr('style');
+			}
 		}
 	});
 	//When Retrieve button is clicked,
@@ -150,7 +234,7 @@ $(function() {
 		var patientID;
 		var testID;
 		var testsList = [];
-		loadOverlay.css('display','flex');
+		loadOverlay.css('display', 'flex');
 		$('.window.test').slideToggle(500, function() {
 			$('.window.test').remove();
 		});
@@ -167,10 +251,12 @@ $(function() {
 		}, function done(err) {
 			if (err) {
 				console.error(err);
-			} else if (!recordID) {
+			}
+			else if (!recordID) {
 				alert('Unable to find accession number. Please try again.');
 				loadOverlay.removeAttr('style');
-			} else {
+			}
+			else {
 				clearInterval(saveInterval);
 				base('Patient Information').select({
 					view: "Grid view",
@@ -181,9 +267,15 @@ $(function() {
 					});
 					fetchNextPage();
 				}, function done(err) {
-					if (err) {console.error(err); return;}
+					if (err) {
+						console.error(err);
+						return;
+					}
 					base('Patient Information').find(recordID, function(err, record) {
-						if (err) {console.error(err); return;}
+						if (err) {
+							console.error(err);
+							return;
+						}
 						$('#patient-id').html('<strong>Patient ID:</strong> ' + patientID);
 						$('#patient-location').html('<strong>Location:</strong> ' + record.get('Location'));
 						$('#patient-name').html('<strong>Patient Name:</strong> ' + record.get('Patient Name'));
@@ -201,9 +293,13 @@ $(function() {
 					});
 					fetchNextPage();
 				}, function done(err) {
-					if (err) {console.error(err); return;}
+					if (err) {
+						console.error(err);
+						return;
+					}
 					var buttonArray = [];
 					var loopCounter = 0;
+
 					function populateButtons() {
 						buttonArray.join('');
 						$('#tests').html(buttonArray);
@@ -213,8 +309,11 @@ $(function() {
 					for (var i = 0; i < testsList.length; i++) {
 						loopCounter++;
 						base('Tests').find(testsList[i], function(err, record) {
-							if (err) {console.error(err); return;}
-							var testButton = '<div id="' + accessionNumber +	'" class="button" tabindex="0">' + record.get('Test Ordered') + '</div>';
+							if (err) {
+								console.error(err);
+								return;
+							}
+							var testButton = '<div id="' + accessionNumber + '" class="button" tabindex="0">' + record.get('Test Ordered') + '</div>';
 							buttonArray.push(testButton);
 							if (loopCounter === testsList.length) populateButtons();
 						});
@@ -226,8 +325,9 @@ $(function() {
 	//Load accession data for the clicked
 	//test button and initiate auto-save
 	$('#tests').on('click', '.button', function() {
-		var recordID;
-		var appearanceVal,
+		var recordID,
+			releaseState,
+			appearanceVal,
 			colourVal,
 			sgRefractVal,
 			totalVolumeVal,
@@ -265,7 +365,7 @@ $(function() {
 			bacteriaVal,
 			mucousVal,
 			otherMVal;
-		loadOverlay.css('display','flex');
+		loadOverlay.css('display', 'flex');
 		accessionNumber = $(this).attr('id');
 		base('Tests').select({
 			view: 'Grid view',
@@ -273,6 +373,7 @@ $(function() {
 		}).eachPage(function page(records, fetchNextPage) {
 			records.forEach(function(record) {
 				recordID = record.id;
+				releaseState = record.get('Released');
 				appearanceVal = record.get('Appearance');
 				colourVal = record.get('Colour');
 				otherColourVal = record.get('Other Colour');
@@ -292,7 +393,7 @@ $(function() {
 				urobilinogenVal = record.get('Urobilinogen');
 				nitriteVal = record.get('Nitrite');
 				leukocytesVal = record.get('Leukocytes');
-				sedVolumeVal = record.get('Total Sediment Volume'); 
+				sedVolumeVal = record.get('Total Sediment Volume');
 				wbcVal = record.get('WBC');
 				rbcVal = record.get('RBC');
 				fatBodiesVal = record.get('Fat Bodies');
@@ -315,9 +416,15 @@ $(function() {
 			});
 			fetchNextPage();
 		}, function done(err) {
-			if (err) {console.error(err); return;}
+			if (err) {
+				console.error(err);
+				return;
+			}
 			base('Tests').find(recordID, function(err, record) {
-				if (err) {console.error(err); return;}
+				if (err) {
+					console.error(err);
+					return;
+				}
 				var windowExists = $('.window[data-id="' + accessionNumber + '"]').length;
 				if (!windowExists) {
 					var testType = record.get('Test Ordered');
@@ -345,18 +452,6 @@ $(function() {
 										'</select>' +
 										'<label class="hidden" for="other-colour-' + accessionNumber + '">Other Colour</label>' +
 										'<input class="hidden" id="other-colour-' + accessionNumber + '" type="text" />' +
-										'<label for="sg-refract-' + accessionNumber + '">Specific Gravity (Refractometer)</label>' +
-										'<select id="sg-refract-' + accessionNumber + '">' +
-											'<option></option>' +
-											'<option>1.000</option>' +
-											'<option>1.005</option>' +
-											'<option>1.010</option>' +
-											'<option>1.015</option>' +
-											'<option>1.020</option>' +
-											'<option>1.025</option>' +
-											'<option>1.030</option>' +
-											'<option>>1.030</option>' +
-										'</select>' +
 										'<label for="volume-' + accessionNumber + '">Total Volume</label>' +
 										'<div class="unit-container">' +
 											'<input id="volume-' + accessionNumber + '" type="number" min="0" value="0" />' +
@@ -380,24 +475,24 @@ $(function() {
 										'<select id="glucose-' + accessionNumber + '">' +
 											'<option></option>' +
 											'<option>Negative</option>' +
-											'<option>6 mmol/L</option>' +
+											'<option>5.5 mmol/L</option>' +
 											'<option>14 mmol/L</option>' +
 											'<option>28 mmol/L</option>' +
-											'<option>56 mmol/L</option>' +
-											'<option>111 mmol/L</option>' +
-											'<option>>111 mmol/L</option>' +
+											'<option>55 mmol/L</option>' +
+											'<option>>=111 mmol/L</option>' +
 										'</select>' +
 										'<label for="bilirubin-' + accessionNumber + '">Bilirubin</label>' +
 										'<select id="bilirubin-' + accessionNumber + '">' +
 											'<option></option>' +
 											'<option>Negative</option>' +
-											'<option>Small 1+</option>' +
-											'<option>Moderate 2+</option>' +
-											'<option>Large 3+</option>' +
+											'<option>Small +</option>' +
+											'<option>Moderate ++</option>' +
+											'<option>Large +++</option>' +
 										'</select>' +
 										'<label for="ketones-' + accessionNumber + '">Ketones</label>' +
 										'<select id="ketones-' + accessionNumber + '">' +
 											'<option></option>' +
+											'<option>Negative</option>' +
 											'<option>0.5 mmol/L</option>' +
 											'<option>1.5 mmol/L</option>' +
 											'<option>4 mmol/L</option>' +
@@ -407,8 +502,7 @@ $(function() {
 										'<label for="sg-' + accessionNumber + '">Specific Gravity</label>' +
 										'<select id="sg-' + accessionNumber + '">' +
 											'<option></option>' +
-											'<option>1.000</option>' +
-											'<option>1.005</option>' +
+											'<option><=1.005</option>' +
 											'<option>1.010</option>' +
 											'<option>1.015</option>' +
 											'<option>1.020</option>' +
@@ -449,11 +543,11 @@ $(function() {
 										'<label for="urobilinogen-' + accessionNumber + '">Urobilinogen</label>' +
 										'<select id="urobilinogen-' + accessionNumber + '">' +
 											'<option></option>' +
-											'<option>3 &mu;mol/L</option>' +
-											'<option>17 &mu;mol/L</option>' +
-											'<option>34 &mu;mol/L</option>' +
-											'<option>68 &mu;mol/L</option>' +
-											'<option>135 &mu;mol/L</option>' +
+											'<option>3.2 &mu;mol/L</option>' +
+											'<option>16 &mu;mol/L</option>' +
+											'<option>33 &mu;mol/L</option>' +
+											'<option>66 &mu;mol/L</option>' +
+											'<option>131 &mu;mol/L</option>' +
 										'</select>' +
 										'<div class="label">Nitrite</div>' +
 										'<div id="nitrite-' + accessionNumber + '" class="option-buttons">' +
@@ -470,16 +564,31 @@ $(function() {
 											'<option>Large +++</option>' +
 										'</select>' +
 									'</div>' +
+									'<div class="column release">' +
+										'<div class="button" id="release-' + accessionNumber + '">Release</div>' +
+									'</div>' +
 									'<div class="column microscopic">' +
 										'<h2>Microscopic Analysis</h2>' +
 										'<label for="sed-volume-' + accessionNumber + '">Total Sediment Volume</label>' +
 										'<div class="unit-container">' +
-											'<input id="sed-volume-' + accessionNumber + '" type="number" min="0" value="0" />' +
+											'<input id="sed-volume-' + accessionNumber + '" type="text" value="0" />' +
 											'<span class="unit-suffix">ml</span>' +
 										'</div>' +
+										'<label for="sg-refract-' + accessionNumber + '">Specific Gravity (Refractometer)</label>' +
+										'<select id="sg-refract-' + accessionNumber + '">' +
+											'<option>Select one</option>' +
+											'<option>1.000</option>' +
+											'<option>1.005</option>' +
+											'<option>1.010</option>' +
+											'<option>1.015</option>' +
+											'<option>1.020</option>' +
+											'<option>1.025</option>' +
+											'<option>1.030</option>' +
+											'<option>>1.030</option>' +
+										'</select>' +
 										'<label for="wbc-' + accessionNumber + '">WBC</label>' +
 										'<select id="wbc-' + accessionNumber + '">' +
-											'<option></option>' +
+											'<option>Select one</option>' +
 											'<option>Negative</option>' +
 											'<option>0-2/HPF</option>' +
 											'<option>2-5/HPF</option>' +
@@ -491,7 +600,7 @@ $(function() {
 										'</select>' +
 										'<label for="rbc-' + accessionNumber + '">RBC</label>' +
 										'<select id="rbc-' + accessionNumber + '">' +
-											'<option></option>' +
+											'<option>Select one</option>' +
 											'<option>Negative</option>' +
 											'<option>0-2/HPF</option>' +
 											'<option>2-5/HPF</option>' +
@@ -503,7 +612,7 @@ $(function() {
 										'</select>' +
 										'<label for="fat-bodies-' + accessionNumber + '">Fat Bodies</label>' +
 										'<select id="fat-bodies-' + accessionNumber + '">' +
-											'<option></option>' +
+											'<option>Select one</option>' +
 											'<option>Negative</option>' +
 											'<option>0-2/HPF</option>' +
 											'<option>2-5/HPF</option>' +
@@ -515,7 +624,7 @@ $(function() {
 										'</select>' +
 										'<label for="epithelial-cells-' + accessionNumber + '">Squamous Epithelial Cells</label>' +
 										'<select id="epithelial-cells-' + accessionNumber + '">' +
-											'<option></option>' +
+											'<option>Select one</option>' +
 											'<option>Negative</option>' +
 											'<option>0-2</option>' +
 											'<option>2-5</option>' +
@@ -525,7 +634,7 @@ $(function() {
 										'</select>' +
 										'<label for="transitional-cells-' + accessionNumber + '">Transitional Cells</label>' +
 										'<select id="transitional-cells-' + accessionNumber + '">' +
-											'<option></option>' +
+											'<option>Select one</option>' +
 											'<option>Negative</option>' +
 											'<option>0-2</option>' +
 											'<option>2-5</option>' +
@@ -535,7 +644,7 @@ $(function() {
 										'</select>' +
 										'<label for="renal-tubule-cells-' + accessionNumber + '">Renal Tubule Cells</label>' +
 										'<select id="renal-tubule-cells-' + accessionNumber + '">' +
-											'<option></option>' +
+											'<option>Select one</option>' +
 											'<option>Negative</option>' +
 											'<option>0-2</option>' +
 											'<option>2-5</option>' +
@@ -545,7 +654,7 @@ $(function() {
 										'</select>' +
 										'<label for="granular-casts-' + accessionNumber + '">Granular Casts</label>' +
 										'<select id="granular-casts-' + accessionNumber + '">' +
-											'<option></option>' +
+											'<option>Select one</option>' +
 											'<option>0-2/LPF</option>' +
 											'<option>2-5/LPF</option>' +
 											'<option>5-10/LPF</option>' +
@@ -554,7 +663,7 @@ $(function() {
 										'</select>' +
 										'<label for="hyaline-casts-' + accessionNumber + '">Hyaline Casts</label>' +
 										'<select id="hyaline-casts-' + accessionNumber + '">' +
-											'<option></option>' +
+											'<option>Select one</option>' +
 											'<option>0-2/LPF</option>' +
 											'<option>2-5/LPF</option>' +
 											'<option>5-10/LPF</option>' +
@@ -563,7 +672,7 @@ $(function() {
 										'</select>' +
 										'<label for="rbc-cast-' + accessionNumber + '">RBC Cast</label>' +
 										'<select id="rbc-cast-' + accessionNumber + '">' +
-											'<option></option>' +
+											'<option>Select one</option>' +
 											'<option>0-2/LPF</option>' +
 											'<option>2-5/LPF</option>' +
 											'<option>5-10/LPF</option>' +
@@ -572,7 +681,7 @@ $(function() {
 										'</select>' +
 										'<label for="wbc-cast-' + accessionNumber + '">WBC Cast</label>' +
 										'<select id="wbc-cast-' + accessionNumber + '">' +
-											'<option></option>' +
+											'<option>Select one</option>' +
 											'<option>0-2/LPF</option>' +
 											'<option>2-5/LPF</option>' +
 											'<option>5-10/LPF</option>' +
@@ -581,7 +690,7 @@ $(function() {
 										'</select>' +
 										'<label for="waxy-cast-' + accessionNumber + '">Waxy Cast</label>' +
 										'<select id="waxy-cast-' + accessionNumber + '">' +
-											'<option></option>' +
+											'<option>Select one</option>' +
 											'<option>0-2/LPF</option>' +
 											'<option>2-5/LPF</option>' +
 											'<option>5-10/LPF</option>' +
@@ -590,7 +699,7 @@ $(function() {
 										'</select>' +
 										'<label for="oxalate-' + accessionNumber + '">Oxalate</label>' +
 										'<select id="oxalate-' + accessionNumber + '">' +
-											'<option></option>' +
+											'<option>Select one</option>' +
 											'<option>Amorphous</option>' +
 											'<option>0-2/HPF</option>' +
 											'<option>2-5/HPF</option>' +
@@ -600,7 +709,7 @@ $(function() {
 										'</select>' +
 										'<label for="phosphate-' + accessionNumber + '">Phosphate</label>' +
 										'<select id="phosphate-' + accessionNumber + '">' +
-											'<option></option>' +
+											'<option>Select one</option>' +
 											'<option>Amorphous</option>' +
 											'<option>0-2/HPF</option>' +
 											'<option>2-5/HPF</option>' +
@@ -610,7 +719,7 @@ $(function() {
 										'</select>' +
 										'<label for="uric-acid-' + accessionNumber + '">Uric Acid</label>' +
 										'<select id="uric-acid-' + accessionNumber + '">' +
-											'<option></option>' +
+											'<option>Select one</option>' +
 											'<option>Amorphous</option>' +
 											'<option>0-2/HPF</option>' +
 											'<option>2-5/HPF</option>' +
@@ -620,7 +729,7 @@ $(function() {
 										'</select>' +
 										'<label for="urate-' + accessionNumber + '">Urate</label>' +
 										'<select id="urate-' + accessionNumber + '">' +
-											'<option></option>' +
+											'<option>Select one</option>' +
 											'<option>Amorphous</option>' +
 											'<option>0-2/HPF</option>' +
 											'<option>2-5/HPF</option>' +
@@ -630,7 +739,7 @@ $(function() {
 										'</select>' +
 										'<label for="trichomonas-' + accessionNumber + '">Trichomonas</label>' +
 										'<select id="trichomonas-' + accessionNumber + '">' +
-											'<option></option>' +
+											'<option>Select one</option>' +
 											'<option>0-2</option>' +
 											'<option>2-5</option>' +
 											'<option>5-10</option>' +
@@ -649,64 +758,80 @@ $(function() {
 										'<label for="other-microscopic-' + accessionNumber + '">Other</label>' +
 										'<textarea id="other-microscopic-' + accessionNumber + '"></textarea>' +
 									'</div>' +
-									'<div class="button" style="width: fit-content">Release</div>' +
+									'<div class="column release">' +
+										'<div class="button" id="full-release-' + accessionNumber + '">Release</div>' +
+									'</div>' +
 								'</div>';
-						break;
+								break;
 					}
-				$('#main').append(newWindow);
-				$('#appearance-' + accessionNumber).val(appearanceVal);
-				$('#colour-' + accessionNumber).val(colourVal);
-				$('#other-colour-' + accessionNumber).val(otherColourVal);
-				showOtherColour(accessionNumber);
-				$('#sg-refract-' + accessionNumber).val(sgRefractVal);
-				if (!totalVolumeVal) totalVolumeVal = 0;
-				$('#volume-' + accessionNumber).val(totalVolumeVal);
-				var volumeSuffix = $('#volume-' + accessionNumber).closest('.unit-container').children('.unit-suffix');
-				moveUnits(totalVolumeVal,volumeSuffix);
-				$('#microscope-req-' + accessionNumber + ' .option:contains("' + microscopeReqVal + '")').addClass('active');
-				$('#comments-urinalysis-' + accessionNumber).val(uCommentsVal);
-				$('#name-urinalysis-' + accessionNumber).val(uNameVal);
-				$('#date-urinalysis-' + accessionNumber).val(uDateVal);
-				$('#glucose-' + accessionNumber).val(glucoseVal);
-				$('#bilirubin-' + accessionNumber).val(bilirubinVal);
-				$('#ketones-' + accessionNumber).val(ketonesVal);
-				$('#sg-' + accessionNumber).val(sgVal);
-				$('#blood-' + accessionNumber).val(bloodVal);
-				$('#ph-' + accessionNumber).val(phVal);
-				$('#protein-' + accessionNumber).val(proteinVal);
-				$('#urobilinogen-' + accessionNumber).val(urobilinogenVal);
-				$('#nitrite-' + accessionNumber + ' .option:contains("' + nitriteVal + '")').addClass('active');
-				$('#leukocytes-' + accessionNumber).val(leukocytesVal);
-				if (!sedVolumeVal) sedVolumeVal = 0;
-				$('#sed-volume-' + accessionNumber).val(sedVolumeVal);
-				var sedVolumeSuffix = $('#sed-volume-' + accessionNumber).closest('.unit-container').children('.unit-suffix');
-				moveUnits(sedVolumeVal,sedVolumeSuffix);
-				$('#wbc-' + accessionNumber).val(wbcVal);
-				$('#rbc-' + accessionNumber).val(rbcVal);
-				$('#fat-bodies-' + accessionNumber).val(fatBodiesVal);
-				$('#epithelial-cells-' + accessionNumber).val(epithelialCellsVal);
-				$('#transitional-cells-' + accessionNumber).val(transitonalCellsVal);
-				$('#renal-tubule-cells-' + accessionNumber).val(renalTubuleVal);
-				$('#granular-casts-' + accessionNumber).val(granularCastsVal);
-				$('#hyaline-casts-' + accessionNumber).val(hyalineCastsVal);
-				$('#rbc-cast-' + accessionNumber).val(rbcCastVal);
-				$('#wbc-cast-' + accessionNumber).val(wbcCastVal);
-				$('#waxy-cast-' + accessionNumber).val(waxyCastVal);
-				$('#oxalate-' + accessionNumber).val(oxalateVal);
-				$('#phosphate-' + accessionNumber).val(phosphateVal);
-				$('#uric-acid-' + accessionNumber).val(uricAcidVal);
-				$('#urate-' + accessionNumber).val(urateVal);
-				$('#trichomonas-' + accessionNumber).val(trichomonasVal);
-				$('#bacteria-' + accessionNumber + ' .option:contains("' + bacteriaVal + '")').addClass('active');
-				$('#mucous-' + accessionNumber + ' .option:contains("' + mucousVal + '")').addClass('active');
-				$('#other-microscopic-' + accessionNumber).val(otherMVal);
-				chosenSelects();
-				$('div[data-id="' + accessionNumber + '"]').slideToggle(900);
-				loadOverlay.removeAttr('style');
-				$('div[data-id="' + accessionNumber + '"]').removeClass('hidden');
-				$('div[data-id="' + accessionNumber + '"]').removeAttr('style');
-				saveInterval = setInterval( function() { saveData(base,recordID,accessionNumber); }, 1000);
-				} else {
+					$('#main').append(newWindow);
+					$('#appearance-' + accessionNumber).val(appearanceVal);
+					$('#colour-' + accessionNumber).val(colourVal);
+					$('#other-colour-' + accessionNumber).val(otherColourVal);
+					showOtherColour(accessionNumber);
+					$('#sg-refract-' + accessionNumber).val(sgRefractVal);
+					if (!totalVolumeVal) totalVolumeVal = 0;
+					$('#volume-' + accessionNumber).val(totalVolumeVal);
+					var volumeSuffix = $('#volume-' + accessionNumber).closest('.unit-container').children('.unit-suffix');
+					moveUnits(totalVolumeVal, volumeSuffix);
+					$('#microscope-req-' + accessionNumber + ' .option:contains("' + microscopeReqVal + '")').addClass('active');
+					$('#comments-urinalysis-' + accessionNumber).val(uCommentsVal);
+					$('#name-urinalysis-' + accessionNumber).val(uNameVal);
+					$('#date-urinalysis-' + accessionNumber).val(curDate());
+					$('#glucose-' + accessionNumber).val(glucoseVal);
+					$('#bilirubin-' + accessionNumber).val(bilirubinVal);
+					$('#ketones-' + accessionNumber).val(ketonesVal);
+					$('#sg-' + accessionNumber).val(sgVal);
+					$('#blood-' + accessionNumber).val(bloodVal);
+					$('#ph-' + accessionNumber).val(phVal);
+					$('#protein-' + accessionNumber).val(proteinVal);
+					$('#urobilinogen-' + accessionNumber).val(urobilinogenVal);
+					$('#nitrite-' + accessionNumber + ' .option:contains("' + nitriteVal + '")').addClass('active');
+					$('#leukocytes-' + accessionNumber).val(leukocytesVal);
+					if (!sedVolumeVal) sedVolumeVal = 0;
+					$('#sed-volume-' + accessionNumber).val(sedVolumeVal);
+					var sedVolumeSuffix = $('#sed-volume-' + accessionNumber).closest('.unit-container').children('.unit-suffix');
+					moveUnits(sedVolumeVal, sedVolumeSuffix);
+					$('#wbc-' + accessionNumber).val(wbcVal);
+					$('#rbc-' + accessionNumber).val(rbcVal);
+					$('#fat-bodies-' + accessionNumber).val(fatBodiesVal);
+					$('#epithelial-cells-' + accessionNumber).val(epithelialCellsVal);
+					$('#transitional-cells-' + accessionNumber).val(transitonalCellsVal);
+					$('#renal-tubule-cells-' + accessionNumber).val(renalTubuleVal);
+					$('#granular-casts-' + accessionNumber).val(granularCastsVal);
+					$('#hyaline-casts-' + accessionNumber).val(hyalineCastsVal);
+					$('#rbc-cast-' + accessionNumber).val(rbcCastVal);
+					$('#wbc-cast-' + accessionNumber).val(wbcCastVal);
+					$('#waxy-cast-' + accessionNumber).val(waxyCastVal);
+					$('#oxalate-' + accessionNumber).val(oxalateVal);
+					$('#phosphate-' + accessionNumber).val(phosphateVal);
+					$('#uric-acid-' + accessionNumber).val(uricAcidVal);
+					$('#urate-' + accessionNumber).val(urateVal);
+					$('#trichomonas-' + accessionNumber).val(trichomonasVal);
+					$('#bacteria-' + accessionNumber + ' .option:contains("' + bacteriaVal + '")').addClass('active');
+					$('#mucous-' + accessionNumber + ' .option:contains("' + mucousVal + '")').addClass('active');
+					$('#other-microscopic-' + accessionNumber).val(otherMVal);
+					chosenSelects();
+					$('div[data-id="' + accessionNumber + '"]').slideToggle(900);
+					loadOverlay.removeAttr('style');
+					$('div[data-id="' + accessionNumber + '"]').removeClass('hidden');
+					$('div[data-id="' + accessionNumber + '"]').removeAttr('style');
+					saveInterval = setInterval(function() {
+						saveData(base, recordID, accessionNumber);
+					}, 1000);
+					var thisAccession = $('.window.test[data-id="' + accessionNumber + '"]');
+					var partialRelease = $('.column.general, .column.chemical', thisAccession);
+					var fullRelease = $('.column', thisAccession);
+					if (releaseState === "Partial") {
+						releaseData(base,accessionNumber,partialRelease,releaseState)
+						$('#release-' + accessionNumber).addClass('disabled');
+					} else if (releaseState === "Full") {
+						releaseData(base,accessionNumber,fullRelease,releaseState)
+						clearInterval(saveInterval);
+						alert('NOTE: Accession #' + accessionNumber + ' has already been released!');
+					}
+				}
+				else {
 					loadOverlay.removeAttr('style');
 					alert('Accession #' + accessionNumber + ' is already displayed.');
 				}
