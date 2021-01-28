@@ -565,7 +565,7 @@ $(function() {
 										'</select>' +
 									'</div>' +
 									'<div class="column release">' +
-										'<div class="button" id="release-' + accessionNumber + '">Release</div>' +
+										'<div class="button" id="release-' + accessionNumber + '" tabindex="0">Release</div>' +
 									'</div>' +
 									'<div class="column microscopic">' +
 										'<h2>Microscopic Analysis</h2>' +
@@ -759,7 +759,7 @@ $(function() {
 										'<textarea id="other-microscopic-' + accessionNumber + '"></textarea>' +
 									'</div>' +
 									'<div class="column release">' +
-										'<div class="button" id="full-release-' + accessionNumber + '">Release</div>' +
+										'<div class="button" id="full-release-' + accessionNumber + '" tabindex="0">Release</div>' +
 									'</div>' +
 								'</div>';
 								break;
